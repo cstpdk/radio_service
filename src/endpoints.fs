@@ -29,28 +29,27 @@ let changeLocation (id: int): HttpHandler =
     task {
       let! lc = ctx.BindJsonAsync<Radio.LocationChange>()
 
-      let radio = Radio.find db id
-
-      let allowedLocations = radio.allowed_locations
-      let newRadio = { radio with location = Some(lc.location) }
-      return! (
-        if not (List.contains lc.location allowedLocations) then
+      return!
+        match Radio.find db id with
+        | None ->
+          RequestErrors.NOT_FOUND "No such radio" next ctx
+        | Some(radio) when not (List.contains lc.location radio.allowed_locations) ->
           RequestErrors.FORBIDDEN "location not allowed" next ctx
-        else if Radio.save db id newRadio then
+        | Some(radio) when Radio.save db id { radio with location = Some(lc.location) } ->
           Successful.OK "ok" next ctx
-        else
+        | Some(_) ->
           ServerErrors.INTERNAL_ERROR "Couldn't save radio" next ctx
-      )
     }
 
 let getLocation (id: int): HttpHandler =
   fun (next:HttpFunc) (ctx: HttpContext) ->
     let db = ctx.GetService<Radio.DB>();
 
-    let radio = Radio.find db id
-
-    match radio.location with
-    | Some(l) ->
-      let newLocation: Radio.LocationChange = { location = l }
-      Successful.OK newLocation next ctx
-    | None -> RequestErrors.NOT_FOUND "No location on radio" next ctx
+    match Radio.find db id with
+    | Some(radio) ->
+      match radio.location with
+      | Some(l) ->
+        let newLocation: Radio.LocationChange = { location = l }
+        Successful.OK newLocation next ctx
+      | None -> RequestErrors.NOT_FOUND "No location on radio" next ctx
+    | None -> RequestErrors.NOT_FOUND "No such radio" next ctx
