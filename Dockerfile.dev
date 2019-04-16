@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.2-sdk
+FROM microsoft/dotnet:2.2-sdk as dev
 
 RUN apt-get update
 RUN apt-get install -y gnupg git procps
@@ -23,3 +23,5 @@ ARG PROJECT_DIR
 
 ADD . $PROJECT_DIR
 WORKDIR $PROJECT_DIR
+
+RUN echo $PWD

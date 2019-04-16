@@ -1,10 +1,11 @@
 version: '2'
 services:
-    main:
+    dev:
         ports:
-            - "127.0.0.1:8888:8888"
+            - "127.0.0.1:8889:8888"
         build:
             context: .
+            dockerfile: Dockerfile.dev
             args:
                 PROJECT_DIR: ${PWD}
         environment:
@@ -13,7 +14,18 @@ services:
             NUGET_PACKAGES: ${PWD}/nuget
         volumes:
             - .:${PWD}
-        command: bash -c 'dotnet run --project migrate && dotnet watch --project app run'
+        command: bash -c 'dotnet watch --project src run'
+        depends_on:
+            - redis
+
+    prod:
+        ports:
+            - "127.0.0.1:8888:8888"
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        depends_on:
+            - redis
 
     redis:
         image: 'redis'
