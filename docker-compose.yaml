@@ -1,0 +1,30 @@
+version: '2'
+services:
+    main:
+        ports:
+            - "127.0.0.1:8888:8888"
+        build:
+            context: .
+            args:
+                PROJECT_DIR: ${PWD}
+        environment:
+            DOTNET_RUNNING_IN_CONTAINER: 1
+            DOTNET_USE_POLLING_FILE_WATCHER: 1
+            NUGET_PACKAGES: ${PWD}/nuget
+        volumes:
+            - .:${PWD}
+        command: bash -c 'dotnet run --project migrate && dotnet watch --project app run'
+
+    redis:
+        image: 'redis'
+
+    fsharp-language-server:
+        volumes:
+            - .:${PWD}
+        build:
+            context: .
+            args:
+                PROJECT_DIR: ${PWD}
+        command: 'bash -c fls'
+        environment:
+            - NUGET_PACKAGES=${PWD}/nuget
