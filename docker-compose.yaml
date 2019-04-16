@@ -2,7 +2,7 @@ version: '2'
 services:
     dev:
         ports:
-            - "127.0.0.1:8889:8888"
+            - "127.0.0.1:8888:8888"
         build:
             context: .
             dockerfile: Dockerfile.dev
@@ -17,16 +17,6 @@ services:
         command: bash -c 'dotnet watch --project src run'
         depends_on:
             - redis
-
-    prod:
-        ports:
-            - "127.0.0.1:8888:8888"
-        build:
-            context: .
-            dockerfile: Dockerfile.prod
-        depends_on:
-            - redis
-
     redis:
         image: 'redis'
 
